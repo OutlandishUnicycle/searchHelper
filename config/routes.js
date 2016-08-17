@@ -10,8 +10,8 @@ module.exports = function(app) {
   });
   // suggest listings
   app.get('/suggest/:input', function(req, res, next){
-    elastic.getSuggestions(req.params.input).
-    then(function(result) {
+    elastic.getSuggestions(req.params.input)
+    .then(function(result) {
       res.json(result) 
     });
   });
