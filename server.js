@@ -26,7 +26,8 @@ elastic.indexExists()
       'The Internet Is a Playground',
       'The Pragmatic Programmer',
       'The Hitchhikers Guide to the Galaxy',
-      'Trial of the Clone'
+      'Trial of the Clone',
+      'Trial of fire'
     ].map(function(listingTitle){
       return elastic.addListing({
         title: listingTitle,
