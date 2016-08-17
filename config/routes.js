@@ -1,4 +1,4 @@
-var elastic = require('./elasticSearch');
+var elastic = require('../elasticSearch');
 
 module.exports = function(app) {
   // create listing

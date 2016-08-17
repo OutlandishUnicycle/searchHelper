@@ -1,6 +1,6 @@
 var express = require('express');
-var middleware = require('./middleware');
-var routes = require('./routes');
+var middleware = require('./config/middleware');
+var routes = require('./config/routes');
 
 var app = express();
 var port = 8080;
