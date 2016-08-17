@@ -1,13 +1,13 @@
 var elasticsearch = require('elasticsearch');
-var client = new elasticsearch.Client({
+var elasticClient = new elasticsearch.Client({
   host: 'localhost:9200',
   log: 'trace'
 });
 
-var indexName = "listingIndex";
+var indexName = "listingindex";
 
 // Ping elastic search to see if its alive
-client.ping({
+elasticClient.ping({
   requestTimeout: 30000,
 
   // undocumented params are appended to the query string
@@ -22,9 +22,9 @@ client.ping({
 
 //Delete an existing index
 function deleteIndex() {
-  return elastinClient.indices.delte({
+  return elasticClient.indices.delete({
     index:indexName
-  })
+  });
 }
 module.exports.deleteIndex = deleteIndex;
 
@@ -63,19 +63,16 @@ function initMapping() {
       }
   });
 }
-exports.initMapping = initMapping;
+module.exports.initMapping = initMapping;
 
 
-function addListing(document) {  
+function addListing(listing) {  
     return elasticClient.index({
         index: indexName,
         type: "listing",
         body: {
-            id: listing.id,
             title: listing.title,
-            coords: listing.coords,
-            picReference: listing.picReference,
-            createdAt: listing.createdAt,
+            content: listing.content,
             suggest: {
                 input: listing.title.split(" "), // what should be used for the auto-complete analysis
                 output: listing.title,  // the data sent to back to the request
@@ -84,10 +81,10 @@ function addListing(document) {
         }
     });
 }
-exports.addListing = addListing;
+module.exports.addListing = addListing;
 
 function getSuggestions(input) {
-  return ({
+  return elasticClient.suggest({
     index: indexName,
     type: "listing",
     body: {
@@ -101,6 +98,8 @@ function getSuggestions(input) {
     }
   });
 }
+
+module.exports.getSuggestions = getSuggestions;
 
 
 
