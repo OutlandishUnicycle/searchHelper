@@ -4,7 +4,7 @@ var elasticClient = new elasticsearch.Client({
   log: 'trace'
 });
 
-var indexName = "listingindex";
+var indexName = "listings";
 
 // Ping elastic search to see if its alive
 elasticClient.ping({
@@ -51,8 +51,13 @@ function initMapping() {
       type: "listing",
       body: {
           properties: {
+              id: { type: "integer"},
               title: { type: "string" },
-              content: { type: "string" },
+              zipcode: { type: "integer" },
+              status: { type: "integer" },
+              picreference: { type: "string" },
+              category: { type: "string" },
+              description: { type: "string" },
               suggest: {
                   type: "completion",
                   analyzer: "simple",
@@ -71,9 +76,14 @@ function addListing(listing) {
         index: indexName,
         type: "listing",
         body: {
+            id: listing.id,
             title: listing.title,
-            content: listing.content,
-            suggest: {
+            zipcode: listing.coords,
+            status: listing.status,
+            picreference: listing.picreference,
+            category: listing.category,
+            description: listing.description,
+            suggest: {  
                 input: listing.title.split(" "), // what should be used for the auto-complete analysis
                 output: listing.title,  // the data sent to back to the request
                 payload: listing.metadata || {} // an extra object with payload data
@@ -85,14 +95,14 @@ module.exports.addListing = addListing;
 
 function getSuggestions(input) {
   return elasticClient.suggest({
+    // method: "GET",
     index: indexName,
     type: "listing",
     body: {
-      docsuggest: {
+      listingsuggest: {
         text: input,
-        completion: {
-          field: "suggest",
-          fuzzy: true
+        term: {
+          field: 'title'
         }
       }
     }
@@ -100,8 +110,22 @@ function getSuggestions(input) {
 }
 
 module.exports.getSuggestions = getSuggestions;
+ 
+function getSearch(input){
+  return elasticClient.search({
+    // method: "GET",
+    index: indexName,
+    type: "listing",
+    body: {
+      query: {
+        match: {
+          title: input
+        }
+      }
+    },
+  });
+}
 
-
-
+module.exports.getSearch = getSearch;
 
 
