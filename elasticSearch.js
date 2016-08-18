@@ -119,7 +119,11 @@ function getSearch(input){
     body: {
       query: {
         match: {
-          title: input
+          title: {
+            query: input,
+            fuzziness: "AUTO",
+            // prefix_length: 2
+          }
         }
       }
     },
