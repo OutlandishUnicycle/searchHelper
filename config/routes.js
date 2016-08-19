@@ -24,4 +24,12 @@ module.exports = function(app) {
     });
   });
 
+  app.get('/listings/geoSearch', function(req, res) {
+    console.log(req.query);
+    elastic.geoSearch(req.query)
+    .then(result=>{
+      res.json(result);
+    })
+  })
+
 };
