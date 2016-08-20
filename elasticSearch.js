@@ -16,10 +16,47 @@ elasticClient.ping({
   if (error) {
     console.error('elasticsearch cluster is down!');
   } else {
-    console.log('All is well');
+
+  // TODO CALL PUTMAPPING AND SHAPE INDEX FOR MYSQL DATA
+  return elasticClient.indices.delete({
+    index:indexName
+  })
+  .then(()=>{
+  	return elasticClient.indices.create({
+	    index:indexName
+	  })
+	  .then(()=>{
+	    return elasticClient.indices.putMapping({
+	      index: indexName,
+	      type: "listing",
+	      body: {
+	        properties: {
+	          id: { type: "integer"},
+	          title: { type: "string" },
+	          zipcode: { type: "integer" },
+	          picReference: { type: "string" },
+	          category: { type: "string" },
+	          coordinates: {type: "geo_point"},
+	          createdAt: {type: "date"},
+	        },
+
+	      }
+		  })
+		  .then(()=>{
+        console.log('All is well');
+		  });
+	  })
+  });
   }
 });
 
+//Get the mappings for field properties
+function getMap() {
+	return elasticClient.indices.getFieldMapping({
+	  index: indexName,
+	  type: "listing"
+	})
+}
 //Delete an existing index
 function deleteIndex() {
   return elasticClient.indices.delete({
@@ -45,30 +82,31 @@ function indexExists() {
 module.exports.indexExists = indexExists;
 
 // Mapping for the Listing Index
-function initMapping() {  
-  return elasticClient.indices.putMapping({
-      index: indexName,
-      type: "listing",
-      body: {
-          properties: {
-              id: { type: "integer"},
-              title: { type: "string" },
-              zipcode: { type: "integer" },
-              status: { type: "integer" },
-              picreference: { type: "string" },
-              category: { type: "string" },
-              description: { type: "string" },
-              suggest: {
-                  type: "completion",
-                  analyzer: "simple",
-                  search_analyzer: "simple",
-                  payloads: true
-              }
-          }
-      }
-  });
-}
-module.exports.initMapping = initMapping;
+//TODO DELETE ALL THIS
+// function initMapping() {  
+//   return elasticClient.indices.putMapping({
+//       index: indexName,
+//       type: "listing",
+//       body: {
+//           properties: {
+//               id: { type: "integer"},
+//               title: { type: "string" },
+//               zipcode: { type: "integer" },
+//               status: { type: "integer" },
+//               picreference: { type: "string" },
+//               category: { type: "string" },
+//               description: { type: "string" },
+//               suggest: {
+//                   type: "completion",
+//                   analyzer: "simple",
+//                   search_analyzer: "simple",
+//                   payloads: true
+//               }
+//           }
+//       }
+//   });
+// }
+// module.exports.initMapping = initMapping;
 
 
 function addListing(listing) {  
@@ -102,7 +140,7 @@ function getSuggestions(input) {
       listingsuggest: {
         text: input,
         term: {
-          field: 'title'
+          field: 'title',
         }
       }
     }
@@ -112,24 +150,55 @@ function getSuggestions(input) {
 module.exports.getSuggestions = getSuggestions;
  
 function getSearch(input){
-  return elasticClient.search({
-    // method: "GET",
+	var params = {
     index: indexName,
     type: "listing",
     body: {
-      query: {
-        match: {
-          title: {
-            query: input,
-            fuzziness: "AUTO",
-            // prefix_length: 2
-          }
-        }
+    	query: {
+	      bool: {
+	        must: [{ "match" : { "status" : "0" } }],
+	      }
       }
     },
-  });
+  };
+
+  if (input.keywords !== "") {
+  	params.body.query.bool.must.push({ "match": {  "title" : {"query": input.keywords, "fuzziness": "2"}}  })
+  }
+  if (input.category !== "all-categories") {
+    params.body.query.bool.must.push({"match" : { "category": input.category } })	
+  }
+  if (input.coordinates) {
+  	params.body.query.bool.filter = {
+      geo_distance: {
+        distance: input.distance,
+        coordinates : input.coordinates,
+		    }
+      };
+  }
+  return elasticClient.search(params);
 }
 
 module.exports.getSearch = getSearch;
 
+function geoSearch(input) {
+  return elasticClient.search({
+	  index: indexName,
+	  type: "listing",
+	  body: {
+	    query: {
+	      match: {
+	        title: input.title,
+	      },
+      filter: {
+        geo_distance: {
+	        distance: input.distance,
+	        location : input.coords,
+			    }
+        }
+      }
+    }
+	});
+}
 
+module.exports.geoSearch = geoSearch;

@@ -2,8 +2,9 @@ var elastic = require('../elasticSearch');
 
 module.exports = function(app) {
   // search for a listing
-  app.get('/listings/:input', function(req, res, next){
-    elastic.getSearch(req.params.input)
+  app.get('/listings', function(req, res, next){
+    console.log(req.query);
+    elastic.getSearch(req.query)
     .then(function(result){
       res.json(result);
     });
@@ -23,5 +24,14 @@ module.exports = function(app) {
       res.json(result) 
     });
   });
+
+  app.get('/listings/geoSearch', function(req, res) {
+    console.log(req.query);
+    elastic.geoSearch(req.query)
+    .then(result=>{
+      res.json(result);
+    })
+  });
+
 
 };
