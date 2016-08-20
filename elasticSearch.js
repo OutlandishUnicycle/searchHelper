@@ -16,39 +16,32 @@ elasticClient.ping({
   if (error) {
     console.error('elasticsearch cluster is down!');
   } else {
-
-  // TODO CALL PUTMAPPING AND SHAPE INDEX FOR MYSQL DATA
-  return elasticClient.indices.delete({
-    index:indexName
-  })
-  .then(()=>{
-  	return elasticClient.indices.create({
-	    index:indexName
-	  })
-	  .then(()=>{
-	    return elasticClient.indices.putMapping({
-	      index: indexName,
-	      type: "listing",
-	      body: {
-	        properties: {
-	          id: { type: "integer"},
-	          title: { type: "string" },
-	          zipcode: { type: "integer" },
-	          picReference: { type: "string" },
-	          category: { type: "string" },
-	          coordinates: {type: "geo_point"},
-	          createdAt: {type: "date"},
-	        },
-
-	      }
-		  })
-		  .then(()=>{
-        console.log('All is well');
-		  });
-	  })
-  });
+    console.error('All is well.');
   }
 });
+
+// Put Mapping
+// Mapping for the Listing Index
+function initMapping() {  
+  return elasticClient.indices.putMapping({
+    index: indexName,
+    type: "listing",
+    body: {
+      properties: {
+        id: { type: "integer"},
+        title: { type: "string" },
+        zipcode: { type: "integer" },
+        picReference: { type: "string" },
+        category: { type: "string" },
+        coordinates: {type: "geo_point"},
+        createdAt: {type: "date"},
+      },
+
+    }
+  });
+}
+module.exports.initMapping = initMapping;
+
 
 //Get the mappings for field properties
 function getMap() {
@@ -81,32 +74,6 @@ function indexExists() {
 }
 module.exports.indexExists = indexExists;
 
-// Mapping for the Listing Index
-//TODO DELETE ALL THIS
-// function initMapping() {  
-//   return elasticClient.indices.putMapping({
-//       index: indexName,
-//       type: "listing",
-//       body: {
-//           properties: {
-//               id: { type: "integer"},
-//               title: { type: "string" },
-//               zipcode: { type: "integer" },
-//               status: { type: "integer" },
-//               picreference: { type: "string" },
-//               category: { type: "string" },
-//               description: { type: "string" },
-//               suggest: {
-//                   type: "completion",
-//                   analyzer: "simple",
-//                   search_analyzer: "simple",
-//                   payloads: true
-//               }
-//           }
-//       }
-//   });
-// }
-// module.exports.initMapping = initMapping;
 
 
 function addListing(listing) {  
@@ -179,6 +146,7 @@ function getSearch(input){
   return elasticClient.search(params);
 }
 
+
 module.exports.getSearch = getSearch;
 
 function geoSearch(input) {
@@ -202,3 +170,13 @@ function geoSearch(input) {
 }
 
 module.exports.geoSearch = geoSearch;
+
+function deleteDocument(input){
+  return elasticClient.delete({
+    index: indexName,
+    type: "listing",
+    id:'input'
+  });
+}
+
+module.exports.deleteDocument = deleteDocument;
