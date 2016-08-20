@@ -34,9 +34,10 @@ elasticClient.ping({
 	          id: { type: "integer"},
 	          title: { type: "string" },
 	          zipcode: { type: "integer" },
-	          picreference: { type: "string" },
+	          picReference: { type: "string" },
 	          category: { type: "string" },
-	          coordinates: {type: "geo_point"}
+	          coordinates: {type: "geo_point"},
+	          createdAt: {type: "date"},
 	        },
 
 	      }
@@ -149,22 +150,33 @@ function getSuggestions(input) {
 module.exports.getSuggestions = getSuggestions;
  
 function getSearch(input){
-  return elasticClient.search({
-    // method: "GET",
+	var params = {
     index: indexName,
     type: "listing",
     body: {
-      query: {
-        match: {
-          title: {
-            query: input,
-            fuzziness: "AUTO",
-            // prefix_length: 2
-          }
-        }
+    	query: {
+	      bool: {
+	        must: [{ "match" : { "status" : "0" } }],
+	      }
       }
     },
-  });
+  };
+
+  if (input.keywords !== "") {
+  	params.body.query.bool.must.push({ "match": {  "title" : {"query": input.keywords, "fuzziness": "2"}}  })
+  }
+  if (input.category !== "all-categories") {
+    params.body.query.bool.must.push({"match" : { "category": input.category } })	
+  }
+  if (input.coordinates) {
+  	params.body.query.bool.filter = {
+      geo_distance: {
+        distance: input.distance,
+        coordinates : input.coordinates,
+		    }
+      };
+  }
+  return elasticClient.search(params);
 }
 
 module.exports.getSearch = getSearch;
