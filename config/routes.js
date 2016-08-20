@@ -20,8 +20,13 @@ module.exports = function(app) {
   app.get('/listings/suggest/:input', function(req, res, next){
     elastic.getSuggestions(req.params.input)
     .then(function(result) {
-      // console.log('~~~~~~~~~~~~~~~~~~~~~~~~~',result);
-      res.json(result) 
+      res.json(result);
+    });
+  });
+  app.delete('/listings/:input', function(req, res, next){
+    elastic.deleteDocument(req.params.input)
+    .then(function(result){
+      res.json(result);
     });
   });
 
@@ -32,6 +37,4 @@ module.exports = function(app) {
       res.json(result);
     })
   });
-
-
 };
