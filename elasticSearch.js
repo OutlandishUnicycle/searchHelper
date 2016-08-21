@@ -175,7 +175,7 @@ function deleteDocument(input){
   return elasticClient.delete({
     index: indexName,
     type: "listing",
-    id:'input'
+    id:input
   });
 }
 
