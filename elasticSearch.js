@@ -123,7 +123,7 @@ function getSearch(input){
     body: {
     	query: {
 	      bool: {
-	        must: [{ "match" : { "status" : "0" } }],
+	        must: [],
 	      }
       }
     },
@@ -135,7 +135,7 @@ function getSearch(input){
   if (input.category !== "all-categories") {
     params.body.query.bool.must.push({"match" : { "category": input.category } })	
   }
-  if (input.coordinates) {
+  if (input.coordinates !== '0,0') {
   	params.body.query.bool.filter = {
       geo_distance: {
         distance: input.distance,
