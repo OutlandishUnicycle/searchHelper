@@ -1,6 +1,6 @@
 var elasticsearch = require('elasticsearch');
 var elasticClient = new elasticsearch.Client({
-  host: 'localhost:9200',
+  host: 'search-discollect-elasticsearch-vnmwwax32cnkpgx22yru5h3ixu.us-west-1.es.amazonaws.com:80',
   log: 'trace'
 });
 
