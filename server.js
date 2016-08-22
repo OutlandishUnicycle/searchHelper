@@ -6,7 +6,7 @@ var routes = require('./config/routes');
 var elastic = require('./elasticSearch.js');
 
 var app = express();
-var port = 8080;
+var port = process.env.PORT || 8080;
 
 middleware(app);
 routes(app);
