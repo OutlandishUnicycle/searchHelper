@@ -61,7 +61,31 @@ module.exports.deleteIndex = deleteIndex;
 //Create the index
 function initIndex() {
   return elasticClient.indices.create({
-    index:indexName
+    index:indexName,
+    body: {
+        settings: {
+            number_of_shards: 1, 
+            analysis: {
+                filter: {
+                    autocomplete_filter: { 
+                        type:     "edge_ngram",
+                        min_gram: 1,
+                        max_gram: 20
+                    }
+                },
+                analyzer: {
+                    autocomplete: {
+                        type:      "custom",
+                        tokenizer: "standard",
+                        filter: [
+                            "lowercase",
+                            "autocomplete_filter" 
+                        ]
+                    }
+                }
+            }
+        }
+      }
   });
 }
 module.exports.initIndex = initIndex;
