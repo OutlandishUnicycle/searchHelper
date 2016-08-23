@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "logstash" : "logstash-2.3.4/bin/logstash -f logstash-2.3.4/first-pipeline.conf"
+    "logstash" : "logstash-2.3.4/bin/logstash -f logstash-2.3.4/first-pipeline.conf",
+    "start": "nodemon server.js && npm run logstash"
   },
   "repository": {
     "type": "git",
