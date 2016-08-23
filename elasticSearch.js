@@ -29,7 +29,10 @@ function initMapping() {
     body: {
       properties: {
         id: { type: "integer"},
-        title: { type: "string" },
+        title: {"type":     "string",
+                // "analyzer": "autocomplete", 
+                // "search_analyzer": "standard"
+              },
         zipcode: { type: "integer" },
         picReference: { type: "string" },
         category: { type: "string" },
@@ -62,30 +65,30 @@ module.exports.deleteIndex = deleteIndex;
 function initIndex() {
   return elasticClient.indices.create({
     index:indexName,
-    body: {
-        settings: {
-            number_of_shards: 1, 
-            analysis: {
-                filter: {
-                    autocomplete_filter: { 
-                        type:     "edge_ngram",
-                        min_gram: 1,
-                        max_gram: 20
-                    }
-                },
-                analyzer: {
-                    autocomplete: {
-                        type:      "custom",
-                        tokenizer: "standard",
-                        filter: [
-                            "lowercase",
-                            "autocomplete_filter" 
-                        ]
-                    }
-                }
-            }
-        }
-      }
+    // body: {
+    //     settings: {
+    //         number_of_shards: 1, 
+    //         analysis: {
+    //             filter: {
+    //                 autocomplete_filter: { 
+    //                     type:     "edge_ngram",
+    //                     min_gram: 1,
+    //                     max_gram: 20
+    //                 }
+    //             },
+    //             analyzer: {
+    //                 autocomplete: {
+    //                     type:      "custom",
+    //                     tokenizer: "standard",
+    //                     filter: [
+    //                         "lowercase",
+    //                         "autocomplete_filter" 
+    //                     ]
+    //                 }
+    //             }
+    //         }
+    //     }
+    //   }
   });
 }
 module.exports.initIndex = initIndex;
@@ -100,27 +103,13 @@ module.exports.indexExists = indexExists;
 
 
 
-function addListing(listing) {  
-    return elasticClient.index({
-        index: indexName,
-        type: "listing",
-        body: {
-            id: listing.id,
-            title: listing.title,
-            zipcode: listing.coords,
-            status: listing.status,
-            picreference: listing.picreference,
-            category: listing.category,
-            description: listing.description,
-            suggest: {  
-                input: listing.title.split(" "), // what should be used for the auto-complete analysis
-                output: listing.title,  // the data sent to back to the request
-                payload: listing.metadata || {} // an extra object with payload data
-            }
-        }
-    });
+function getCount () {
+	return elasticClient.count({
+		index: indexName,
+	});
 }
-module.exports.addListing = addListing;
+
+module.exports.getCount = getCount;
 
 function getSuggestions(input) {
   return elasticClient.suggest({
@@ -144,6 +133,7 @@ function getSearch(input){
 	var params = {
     index: indexName,
     type: "listing",
+    size: 50,
     body: {
     	query: {
 	      bool: {
@@ -154,10 +144,17 @@ function getSearch(input){
   };
 
   if (input.keywords !== "") {
-  	params.body.query.bool.must.push({ "match": {  "title" : {"query": input.keywords, "fuzziness": "2"}}  })
+  	params.body.query.bool.must.push({ "match_phrase_prefix" : {
+      title : {
+          "query": input.title,
+          "slop" : 5,
+          "max_expansions": 50,
+          "fuzziness" : 2,
+      }
+    }})
   }
   if (input.category !== "all-categories") {
-    params.body.query.bool.must.push({"match" : { "category": input.category } })	
+    params.body.query.bool.must.push({"match" : { "category":{ 'query' : input.category, }} })	
   }
   if (input.coordinates !== '0,0') {
   	params.body.query.bool.filter = {
@@ -173,27 +170,26 @@ function getSearch(input){
 
 module.exports.getSearch = getSearch;
 
-function geoSearch(input) {
+function titleSearch(input) {
   return elasticClient.search({
 	  index: indexName,
 	  type: "listing",
 	  body: {
 	    query: {
-	      match: {
-	        title: input.title,
-	      },
-      filter: {
-        geo_distance: {
-	        distance: input.distance,
-	        location : input.coords,
-			    }
-        }
+        "match_phrase_prefix" : {
+          title : {
+            "query": input.title,
+            "slop" : 5,
+            "max_expansions": 50,
+            "fuzziness" : 1,
+          }
+   		  }
       }
     }
 	});
-}
+};
 
-module.exports.geoSearch = geoSearch;
+module.exports.titleSearch = titleSearch;
 
 function deleteDocument(input){
   return elasticClient.delete({
@@ -204,3 +200,18 @@ function deleteDocument(input){
 }
 
 module.exports.deleteDocument = deleteDocument;
+
+function matchAll() {
+	return elasticClient.search({
+		index: indexName,
+		type: 'listing',
+		size: 50,
+		body : {
+			query: { 
+				match_all : {} 
+			}
+		}
+	});
+}
+
+module.exports.matchAll = matchAll;
