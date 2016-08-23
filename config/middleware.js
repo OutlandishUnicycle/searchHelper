@@ -7,4 +7,7 @@ module.exports = function(app) {
   app.use(cors());
   app.use(morgan('dev'));
   app.use(bodyParser.json());
+  app.use('/*', (req, res) => {
+    res.send('Yippeeka-yay!');
+  });
 };
