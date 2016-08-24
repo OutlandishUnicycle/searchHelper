@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    // "logstash" : "logstash-2.3.4/bin/logstash -f logstash-2.3.4/first-pipeline.conf",
     "start": "nodemon server.js"
   },
   "repository": {
