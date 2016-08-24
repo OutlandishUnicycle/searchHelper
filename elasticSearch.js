@@ -133,7 +133,8 @@ function getSearch(input){
 	var params = {
     index: indexName,
     type: "listing",
-    size: 50,
+    size: 3,
+    from: input.startFrom,
     body: {
     	query: {
 	      bool: {
