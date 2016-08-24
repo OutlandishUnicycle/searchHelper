@@ -93,7 +93,7 @@ function getSearch(input){
 	var params = {
     index: indexName,
     type: "listing",
-    size: 3,
+    size: 9,
     from: input.startFrom,
     body: {
     	query: {
@@ -161,11 +161,12 @@ function deleteDocument(input){
 
 module.exports.deleteDocument = deleteDocument;
 
-function matchAll() {
+function matchAll(input) {
 	return elasticClient.search({
 		index: indexName,
 		type: 'listing',
-		size: 50,
+		size: 9,
+    from: input.startFrom,
 		body : {
 			query: { 
 				match_all : {} 

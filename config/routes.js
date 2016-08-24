@@ -4,7 +4,7 @@ module.exports = function(app) {
   // search for a listing
   app.get('/listings', function(req, res, next){
     if (req.query.keywords === '' && req.query.category === 'all-categories' && req.query.coordinates === '0,0') {
-      elastic.matchAll()
+      elastic.matchAll(req.query)
       .then(result => {
         res.json(result);
       });
