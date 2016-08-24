@@ -146,7 +146,7 @@ function getSearch(input){
   if (input.keywords !== "") {
   	params.body.query.bool.must.push({ "match_phrase_prefix" : {
       title : {
-          "query": input.title,
+          "query": input.keywords,
           "slop" : 5,
           "max_expansions": 50,
           "fuzziness" : 2,
