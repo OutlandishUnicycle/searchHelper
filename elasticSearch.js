@@ -65,30 +65,6 @@ module.exports.deleteIndex = deleteIndex;
 function initIndex() {
   return elasticClient.indices.create({
     index:indexName,
-    // body: {
-    //     settings: {
-    //         number_of_shards: 1, 
-    //         analysis: {
-    //             filter: {
-    //                 autocomplete_filter: { 
-    //                     type:     "edge_ngram",
-    //                     min_gram: 1,
-    //                     max_gram: 20
-    //                 }
-    //             },
-    //             analyzer: {
-    //                 autocomplete: {
-    //                     type:      "custom",
-    //                     tokenizer: "standard",
-    //                     filter: [
-    //                         "lowercase",
-    //                         "autocomplete_filter" 
-    //                     ]
-    //                 }
-    //             }
-    //         }
-    //     }
-    //   }
   });
 }
 module.exports.initIndex = initIndex;
@@ -111,25 +87,9 @@ function getCount () {
 
 module.exports.getCount = getCount;
 
-function getSuggestions(input) {
-  return elasticClient.suggest({
-    // method: "GET",
-    index: indexName,
-    type: "listing",
-    body: {
-      listingsuggest: {
-        text: input,
-        term: {
-          field: 'title',
-        }
-      }
-    }
-  });
-}
-
-module.exports.getSuggestions = getSuggestions;
  
 function getSearch(input){
+	console.log(input)
 	var params = {
     index: indexName,
     type: "listing",
@@ -146,7 +106,7 @@ function getSearch(input){
   if (input.keywords !== "") {
   	params.body.query.bool.must.push({ "match_phrase_prefix" : {
       title : {
-          "query": input.title,
+          "query": input.keywords,
           "slop" : 5,
           "max_expansions": 50,
           "fuzziness" : 2,
