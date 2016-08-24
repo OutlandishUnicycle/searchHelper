@@ -148,7 +148,6 @@ function getSearch(input){
       title : {
           "query": input.keywords,
           "slop" : 5,
-          "max_expansions": 50,
           "fuzziness" : 2,
       }
     }})
