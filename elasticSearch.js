@@ -169,8 +169,12 @@ function matchAll(input) {
     from: input.startFrom,
 		body : {
 			query: { 
-				match_all : {} 
-			}
+				match_all : {},
+       
+			},
+      sort : [
+        { "createdat" : {"order" : "desc"}},
+      ],
 		}
 	});
 }
